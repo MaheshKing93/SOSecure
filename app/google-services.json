@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "533372982173",
+    "project_id": "so-9cd03",
+    "storage_bucket": "so-9cd03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533372982173:android:c56f17f7477367ba4c1574",
+        "android_client_info": {
+          "package_name": "uk.ac.tees.mad.sosecure"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeXYEh9HehcDWi5G6Qhcm5QdQKKgY1dCU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
