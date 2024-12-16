@@ -1,5 +1,8 @@
 package uk.ac.tees.mad.sosecure.presentation.screens
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
@@ -39,6 +44,8 @@ fun SOSActivationScreen(navController: NavController) {
     var countdownTime by remember { mutableIntStateOf(5) }
     var isCancelled by remember { mutableStateOf(false) }
     var emergencyContact by remember { mutableStateOf("") }
+
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     // Load emergency contacts from Firestore
     LaunchedEffect(Unit) {
@@ -66,6 +73,7 @@ fun SOSActivationScreen(navController: NavController) {
             countdownTime--
         }
         if (countdownTime == 0 && !isCancelled) {
+            sendSOSAlert(fusedLocationClient, emergencyContact, context)
 //            navController.popBackStack() // Navigate back after sending SOS
         }
     }
@@ -133,5 +141,35 @@ fun SOSActivationScreen(navController: NavController) {
                 }
             }
         }
+    }
+}
+
+
+// Function to handle SOS Alert
+@SuppressLint("MissingPermission")
+private fun sendSOSAlert(
+    fusedLocationClient: FusedLocationProviderClient,
+    emergencyContacts: String,
+    context: Context
+) {
+    //Getting location
+    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+        if (location != null) {
+            val latitude = location.latitude
+            val longitude = location.longitude
+
+            Log.d("SOS", "Latitude: $latitude, Longitude: $longitude")
+            // Compose SOS message
+            val message =
+                "SOS! I need help. My location: https://maps.google.com/?q=$latitude,$longitude"
+
+            // Send SMS to  emergency contacts
+
+            // Send notification to user and vibrate
+        } else {
+            Toast.makeText(context, "Failed to fetch location.", Toast.LENGTH_SHORT).show()
+        }
+    }.addOnFailureListener {
+        Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
     }
 }
