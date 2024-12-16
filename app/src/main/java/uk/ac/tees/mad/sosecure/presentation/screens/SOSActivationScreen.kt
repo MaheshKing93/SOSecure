@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.sosecure.presentation.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 
 @Composable
@@ -37,7 +40,24 @@ fun SOSActivationScreen(navController: NavController) {
     var isCancelled by remember { mutableStateOf(false) }
     var emergencyContact by remember { mutableStateOf("") }
 
+    // Load emergency contacts from Firestore
+    LaunchedEffect(Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
 
+        db.collection("users").document(auth.currentUser?.uid!!)
+            .get()
+            .addOnSuccessListener { document ->
+                document?.let {
+                    emergencyContact = it.get("emergencyContacts") as? String ?: ""
+                    println(emergencyContact)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to load emergency contacts.", Toast.LENGTH_SHORT)
+                    .show()
+            }
+    }
 
     // Countdown Logic
     LaunchedEffect(countdownTime) {
