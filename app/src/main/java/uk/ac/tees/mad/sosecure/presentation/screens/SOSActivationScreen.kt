@@ -1,15 +1,7 @@
 package uk.ac.tees.mad.sosecure.presentation.screens
 
 import android.annotation.SuppressLint
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
-import android.media.MediaPlayer
-import android.net.Uri
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
 import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
@@ -40,15 +32,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
-import uk.ac.tees.mad.sosecure.R
 
 
 @Composable
@@ -87,11 +76,8 @@ fun SOSActivationScreen(navController: NavController) {
         }
         if (countdownTime == 0 && !isCancelled) {
             sendSOSAlert(fusedLocationClient, emergencyContact, context, {
-                vibratePhone(context)
-                playSuccessSound(context)
+                navController.navigate("success")
             })
-
-//            navController.popBackStack() // Navigate back after sending SOS
         }
     }
 
@@ -182,8 +168,7 @@ private fun sendSOSAlert(
                 "SOS! I need help. My location: https://maps.google.com/?q=$latitude,$longitude"
 
             // Send SMS to  emergency contacts
-            sendSMS(emergencyContacts, message, context)
-            onSent()
+            sendSMS(emergencyContacts, message, context, { onSent() })
 
         } else {
             Toast.makeText(context, "Failed to fetch location.", Toast.LENGTH_SHORT).show()
@@ -194,36 +179,16 @@ private fun sendSOSAlert(
 }
 
 // Function to send SMS
-private fun sendSMS(phoneNumber: String, message: String, context: Context) {
+private fun sendSMS(phoneNumber: String, message: String, context: Context, onSent: () -> Unit) {
 //    val intent = Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", phoneNumber, null))
 //    intent.putExtra("sms_body", message)
 //    context.startActivity(intent)
     try {
         val smsManager = context.getSystemService(SmsManager::class.java)
         smsManager.sendTextMessage(phoneNumber, null, message, null, null)
-        Toast.makeText(context, "SOS Alert Sent", Toast.LENGTH_SHORT).show()
+        onSent()
     } catch (ex: Exception) {
         ex.printStackTrace()
         Toast.makeText(context, "SOS can't be sent.", Toast.LENGTH_SHORT).show()
     }
 }
-
-@SuppressLint("MissingPermission")
-private fun vibratePhone(context: Context) {
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-    } else {
-        vibrator.vibrate(300) // For older devices
-    }
-}
-
-private fun playSuccessSound(context: Context) {
-    val mediaPlayer = MediaPlayer.create(context, R.raw.success)
-    mediaPlayer.start()
-    mediaPlayer.setOnCompletionListener {
-        mediaPlayer.release()
-    }
-}
-

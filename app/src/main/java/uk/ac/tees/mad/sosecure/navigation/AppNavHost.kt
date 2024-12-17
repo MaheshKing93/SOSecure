@@ -9,6 +9,7 @@ import uk.ac.tees.mad.sosecure.presentation.screens.LoginScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.RegisterScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.HomeScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.SplashScreen
+import uk.ac.tees.mad.sosecure.presentation.screens.SuccessScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -18,5 +19,6 @@ fun AppNavHost(navController: NavHostController) {
         composable("register") { RegisterScreen(navController) }
         composable("home") { HomeScreen(navController) }
         composable("sos_activation") { SOSActivationScreen(navController) }
+        composable("success") {SuccessScreen(navController)        }
     }
 }
