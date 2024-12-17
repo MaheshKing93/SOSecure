@@ -1,4 +1,4 @@
-package uk.ac.tees.mad.sosecure.presentation.screens.splash
+package uk.ac.tees.mad.sosecure.presentation.screens
 
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image

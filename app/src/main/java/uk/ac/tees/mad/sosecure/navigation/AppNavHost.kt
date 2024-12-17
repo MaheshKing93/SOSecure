@@ -5,10 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import uk.ac.tees.mad.sosecure.presentation.screens.SOSActivationScreen
-import uk.ac.tees.mad.sosecure.presentation.screens.auth.LoginScreen
-import uk.ac.tees.mad.sosecure.presentation.screens.auth.RegisterScreen
-import uk.ac.tees.mad.sosecure.presentation.screens.home.HomeScreen
-import uk.ac.tees.mad.sosecure.presentation.screens.splash.SplashScreen
+import uk.ac.tees.mad.sosecure.presentation.screens.LoginScreen
+import uk.ac.tees.mad.sosecure.presentation.screens.RegisterScreen
+import uk.ac.tees.mad.sosecure.presentation.screens.HomeScreen
+import uk.ac.tees.mad.sosecure.presentation.screens.SplashScreen
 
 @Composable
 fun AppNavHost(navController: NavHostController) {

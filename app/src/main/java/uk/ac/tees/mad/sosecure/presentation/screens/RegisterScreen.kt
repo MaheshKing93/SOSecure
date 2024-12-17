@@ -1,4 +1,4 @@
-package uk.ac.tees.mad.sosecure.presentation.screens.auth
+package uk.ac.tees.mad.sosecure.presentation.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
