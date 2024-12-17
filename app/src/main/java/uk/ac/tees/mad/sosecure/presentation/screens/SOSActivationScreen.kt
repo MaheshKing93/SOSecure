@@ -2,6 +2,7 @@ package uk.ac.tees.mad.sosecure.presentation.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -164,6 +165,7 @@ private fun sendSOSAlert(
                 "SOS! I need help. My location: https://maps.google.com/?q=$latitude,$longitude"
 
             // Send SMS to  emergency contacts
+            sendSMS(emergencyContacts, message, context)
 
             // Send notification to user and vibrate
         } else {
@@ -172,4 +174,11 @@ private fun sendSOSAlert(
     }.addOnFailureListener {
         Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
     }
+}
+
+// Function to send SMS
+private fun sendSMS(phoneNumber: String, message: String, context: Context) {
+    val smsManager = context.getSystemService(SmsManager::class.java)
+    smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+    Toast.makeText(context, "SMS sent to $phoneNumber", Toast.LENGTH_SHORT).show()
 }
