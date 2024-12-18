@@ -2,6 +2,7 @@ package uk.ac.tees.mad.sosecure.presentation.screens
 
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,17 +42,35 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-
 
 @Composable
 fun EditProfileScreen(navController: NavController) {
-    var userName by remember { mutableStateOf("John Doe") }
-    var userPhone by remember { mutableStateOf("+1234567890") }
-    var emergencyContact by remember { mutableStateOf("+9876543210") }
-    var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
 
+    var userName by remember { mutableStateOf("") }
+    var userPhone by remember { mutableStateOf("") }
+    var emergencyContact by remember { mutableStateOf("") }
+
+    // Load current user details
+    LaunchedEffect(Unit) {
+        val userId = auth.currentUser?.uid ?: return@LaunchedEffect
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    userName = document.getString("name") ?: ""
+                    userPhone = document.getString("phone") ?: ""
+                    emergencyContact = document.getString("emergencyNumber") ?: ""
+                }
+            }
+            .addOnFailureListener {
+                Log.e("EditProfileScreen", "Error fetching user data: ${it.message}")
+            }
+    }
 
     Box(
         modifier = Modifier
@@ -68,8 +88,9 @@ fun EditProfileScreen(navController: NavController) {
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFDD3E39),
-                modifier = Modifier.padding(top = 40.dp)
+                modifier = Modifier.padding(top = 50.dp)
             )
+
 
             // User Name Input
             OutlinedTextField(
@@ -80,7 +101,9 @@ fun EditProfileScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFDD3E39),
-                    unfocusedBorderColor = Color.Gray
+                    unfocusedBorderColor = Color.Gray,
+                    focusedTextColor = Color(0xFFDD3E39),
+                    unfocusedTextColor = Color(0xFFDD3E39),
                 )
             )
 
@@ -94,7 +117,9 @@ fun EditProfileScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFDD3E39),
-                    unfocusedBorderColor = Color.Gray
+                    unfocusedBorderColor = Color.Gray,
+                    focusedTextColor = Color(0xFFDD3E39),
+                    unfocusedTextColor = Color(0xFFDD3E39),
                 )
             )
 
@@ -108,29 +133,31 @@ fun EditProfileScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFDD3E39),
-                    unfocusedBorderColor = Color.Gray
+                    unfocusedBorderColor = Color.Gray,
+                    focusedTextColor = Color(0xFFDD3E39),
+                    unfocusedTextColor = Color(0xFFDD3E39),
                 )
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Save Button
+            // Save Changes Button
             Button(
                 onClick = {
-                    // Save updated details and navigate back
-                    navController.popBackStack()
+                    val userId = auth.currentUser?.uid ?: return@Button
+                    val updatedData = mapOf(
+                        "name" to userName,
+                        "phone" to userPhone,
+                        "emergencyContact" to emergencyContact
+                    )
+                    db.collection("users").document(userId).update(updatedData)
+                        .addOnSuccessListener {
+                            navController.popBackStack() // Navigate back
+                        }
+                        .addOnFailureListener {
+                            Log.e("EditProfileScreen", "Error updating user data: ${it.message}")
+                        }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3E39))
             ) {
                 Text("Save Changes", color = Color.White)
-            }
-
-            // Cancel Button
-            TextButton(onClick = { navController.popBackStack() }) {
-                Text("Cancel", color = Color.Gray)
             }
         }
     }

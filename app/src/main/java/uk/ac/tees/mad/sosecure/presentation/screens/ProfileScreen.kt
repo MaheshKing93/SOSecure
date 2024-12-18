@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.sosecure.presentation.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,8 +20,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,16 +34,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
-
 
 @Composable
 fun ProfileScreen(navController: NavController) {
-    val userName = remember { mutableStateOf("John Doe") }
-    val userPhone = remember { mutableStateOf("+1234567890") }
-    val emergencyContact = remember { mutableStateOf("+9876543210") }
-    val profileImage = remember { mutableStateOf("") }
+    val db = FirebaseFirestore.getInstance()
+    val auth = FirebaseAuth.getInstance()
+
+    var userName by remember { mutableStateOf("Loading...") }
+    var userPhone by remember { mutableStateOf("Loading...") }
+    var emergencyContact by remember { mutableStateOf("Loading...") }
+
+    // Fetch user data from Firebase Firestore
+    LaunchedEffect(Unit) {
+        val userId = auth.currentUser?.uid ?: return@LaunchedEffect
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    userName = document.getString("name") ?: "N/A"
+                    userPhone = document.getString("phone") ?: "N/A"
+                    emergencyContact = document.getString("emergencyNumber") ?: "N/A"
+                }
+            }
+            .addOnFailureListener {
+                Log.e("ProfileScreen", "Error fetching user data: ${it.message}")
+            }
+    }
 
     Box(
         modifier = Modifier
@@ -67,77 +90,56 @@ fun ProfileScreen(navController: NavController) {
                     .background(Color.Gray),
                 contentAlignment = Alignment.Center
             ) {
-                if (profileImage.value.isNotEmpty()) {
-                    AsyncImage(
-                        model = profileImage.value,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Default Profile Picture",
-                        tint = Color.White,
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Default Profile Picture",
+                    tint = Color.White,
+                    modifier = Modifier.size(64.dp)
+                )
             }
 
             // User Details
             Text(
-                text = userName.value,
+                text = userName,
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Text(
-                text = "Phone: ${userPhone.value}",
+                text = userPhone,
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.DarkGray
             )
+
             Text(
-                text = "Emergency Contact: ${emergencyContact.value}",
+                text = "Emergency: $emergencyContact",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Red,
                 fontWeight = FontWeight.SemiBold
             )
 
             Column(Modifier.padding(16.dp)) {
-
-                // Edit Profile Button
                 Button(
                     onClick = { navController.navigate("editProfile") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3E39))
                 ) {
                     Text("Edit Profile", color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Logout Button
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        val firebase = Firebase.auth
-                        firebase.signOut()
-
+                        FirebaseAuth.getInstance().signOut()
                         navController.navigate("login") {
                             popUpTo("profile") { inclusive = true }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Logout", color = Color.White)
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-            BottomBar(navController)
         }
     }
 }
+
