@@ -39,7 +39,7 @@ fun SuccessScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         vibratePhone(context)
         playSuccessSound(context)
-        delay(3000L)
+        delay(4000L)
         navController.navigate("home") {
             popUpTo("success") { inclusive = true }
         }
@@ -81,12 +81,12 @@ fun SuccessScreen(navController: NavController) {
 
 @SuppressLint("MissingPermission")
 private fun vibratePhone(context: Context) {
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    val vibrator = context.getSystemService(Vibrator::class.java)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val vibrationEffect = VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+        val vibrationEffect = VibrationEffect.createOneShot(800, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
     } else {
-        vibrator.vibrate(300) // For older devices
+        vibrator.vibrate(800) // For older devices
     }
 }
 

@@ -14,9 +14,17 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Sos
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -70,7 +78,6 @@ fun HomeScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
         ) {
 
             Text(
@@ -93,6 +100,7 @@ fun HomeScreen(navController: NavController) {
             HorizontalPager(
                 state = pagerState, modifier = Modifier
                     .fillMaxWidth()
+                    .padding(16.dp)
                     .height(90.dp)
                     .border(
                         width = Dp.Hairline,
@@ -138,8 +146,73 @@ fun HomeScreen(navController: NavController) {
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
+
+            BottomBar(navController)
         }
     }
 
 
+}
+
+@Composable
+fun BottomBar(navController: NavController) {
+    val route = navController.currentBackStackEntry?.destination?.route
+
+    NavigationBar(
+        containerColor = Color.White,
+        contentColor = Color(0xFFDD3E39)
+    ) {
+        NavigationBarItem(
+            selected = route == "home",
+            onClick = {
+                navController.navigate("home")
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Sos,
+                    contentDescription = "Sos",
+                    tint = Color(0xFFDD3E39)
+                )
+            },
+            label = {
+                Text(
+                    text = "SOS",
+                    color = Color(0xFFDD3E39),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color(0xFFDD3E39),
+                selectedTextColor = Color(0xFFDD3E39),
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray
+            )
+        )
+        NavigationBarItem(
+            selected = route == "profile",
+            onClick = {
+                navController.navigate("profile")
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Profile",
+                    tint = Color(0xFFDD3E39)
+                )
+            },
+            label = {
+                Text(
+                    text = "Profile",
+                    color = Color(0xFFDD3E39),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color(0xFFDD3E39),
+                selectedTextColor = Color(0xFFDD3E39),
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray
+            )
+        )
+    }
 }

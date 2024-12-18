@@ -59,7 +59,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.accompanist:accompanist-permissions:0.33.1-alpha")
-
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
 
     implementation(libs.androidx.core.ktx)
