@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import uk.ac.tees.mad.sosecure.presentation.screens.EditProfileScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.SOSActivationScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.LoginScreen
 import uk.ac.tees.mad.sosecure.presentation.screens.RegisterScreen
@@ -22,5 +23,6 @@ fun AppNavHost(navController: NavHostController) {
         composable("sos_activation") { SOSActivationScreen(navController) }
         composable("success") { SuccessScreen(navController) }
         composable("profile") { ProfileScreen(navController) }
+        composable("editProfile") { EditProfileScreen(navController) }
     }
 }

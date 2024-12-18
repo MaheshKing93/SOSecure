@@ -33,10 +33,12 @@ import coil.compose.AsyncImage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
+
 @Composable
 fun ProfileScreen(navController: NavController) {
     val userName = remember { mutableStateOf("John Doe") }
     val userPhone = remember { mutableStateOf("+1234567890") }
+    val emergencyContact = remember { mutableStateOf("+9876543210") }
     val profileImage = remember { mutableStateOf("") }
 
     Box(
@@ -49,19 +51,17 @@ fun ProfileScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-
             Text(
                 text = "Profile",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFDD3E39),
-                modifier = Modifier.padding(top = 40.dp)
+                modifier = Modifier.padding(top = 50.dp)
             )
 
             // Profile Image
             Box(
                 modifier = Modifier
-
                     .size(120.dp)
                     .clip(CircleShape)
                     .background(Color.Gray),
@@ -92,22 +92,30 @@ fun ProfileScreen(navController: NavController) {
                 color = Color.Black
             )
             Text(
-                text = userPhone.value,
+                text = "Phone: ${userPhone.value}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.DarkGray
             )
+            Text(
+                text = "Emergency Contact: ${emergencyContact.value}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Red,
+                fontWeight = FontWeight.SemiBold
+            )
+
             Column(Modifier.padding(16.dp)) {
 
                 // Edit Profile Button
                 Button(
                     onClick = { navController.navigate("editProfile") },
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3E39))
                 ) {
                     Text("Edit Profile", color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Logout Button
                 Button(
@@ -116,22 +124,19 @@ fun ProfileScreen(navController: NavController) {
                         firebase.signOut()
 
                         navController.navigate("login") {
-                            popUpTo("profile") {
-                                inclusive = true
-                            }
+                            popUpTo("profile") { inclusive = true }
                         }
                     },
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .height(50.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Logout", color = Color.White)
                 }
-
             }
+
             Spacer(modifier = Modifier.weight(1f))
-
-
             BottomBar(navController)
         }
     }

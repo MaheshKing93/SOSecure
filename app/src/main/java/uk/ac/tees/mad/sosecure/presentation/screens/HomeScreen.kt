@@ -85,7 +85,7 @@ fun HomeScreen(navController: NavController) {
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFDD3E39),
-                modifier = Modifier.padding(top = 40.dp)
+                modifier = Modifier.padding(top = 50.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
