@@ -138,7 +138,10 @@ fun EditProfileScreen(navController: NavController) {
                     unfocusedTextColor = Color(0xFFDD3E39),
                 )
             )
-            // Save Changes Button
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Save Button
             Button(
                 onClick = {
                     val userId = auth.currentUser?.uid ?: return@Button
@@ -149,15 +152,23 @@ fun EditProfileScreen(navController: NavController) {
                     )
                     db.collection("users").document(userId).update(updatedData)
                         .addOnSuccessListener {
-                            navController.popBackStack() // Navigate back
+                            navController.popBackStack()
                         }
                         .addOnFailureListener {
                             Log.e("EditProfileScreen", "Error updating user data: ${it.message}")
                         }
                 },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDD3E39))
             ) {
                 Text("Save Changes", color = Color.White)
+            }
+
+            // Cancel Button
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text("Cancel", color = Color.Gray)
             }
         }
     }

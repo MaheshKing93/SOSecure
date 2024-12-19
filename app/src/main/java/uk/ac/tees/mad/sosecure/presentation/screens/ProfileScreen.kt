@@ -139,6 +139,8 @@ fun ProfileScreen(navController: NavController) {
                     Text("Logout", color = Color.White)
                 }
             }
+            Spacer(Modifier.weight(1f))
+            BottomBar(navController)
         }
     }
 }
