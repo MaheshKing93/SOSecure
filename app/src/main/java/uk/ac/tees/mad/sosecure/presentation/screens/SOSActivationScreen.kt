@@ -3,7 +3,6 @@ package uk.ac.tees.mad.sosecure.presentation.screens
 import android.annotation.SuppressLint
 import android.content.Context
 import android.telephony.SmsManager
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,13 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import uk.ac.tees.mad.sosecure.data.AppDatabase
+import uk.ac.tees.mad.sosecure.data.EmergencyData
 
 
 @Composable
@@ -63,6 +68,13 @@ fun SOSActivationScreen(navController: NavController) {
                 }
             }
             .addOnFailureListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val ldb = AppDatabase.getInstance(context)
+                    val cachedData = ldb.emergencyDataDao().getEmergencyData()
+                    withContext(Dispatchers.Main) {
+                        emergencyContact = cachedData?.emergencyContact ?: "N/a"
+                    }
+                }
                 Toast.makeText(context, "Failed to load emergency contacts.", Toast.LENGTH_SHORT)
                     .show()
             }
@@ -152,26 +164,50 @@ fun SOSActivationScreen(navController: NavController) {
 @SuppressLint("MissingPermission")
 private fun sendSOSAlert(
     fusedLocationClient: FusedLocationProviderClient,
-    emergencyContacts: String,
+    emergencyContact: String,
     context: Context,
     onSent: () -> Unit
 ) {
     //Getting location
     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-        if (location != null) {
-            val latitude = location.latitude
-            val longitude = location.longitude
+        val latitude = location?.latitude
+        val longitude = location?.longitude
 
-            Log.d("SOS", "Latitude: $latitude, Longitude: $longitude")
-            // Compose SOS message
+        if (latitude != null && longitude != null) {
             val message =
-                "SOS! I need help. My location: https://maps.google.com/?q=$latitude,$longitude"
-
-            // Send SMS to  emergency contacts
-            sendSMS(emergencyContacts, message, context, { onSent() })
-
+                "SOS! I need help. Location: https://maps.google.com/?q=$latitude,$longitude"
+            CoroutineScope(Dispatchers.IO).launch {
+                val db = AppDatabase.getInstance(context)
+                db.emergencyDataDao().insertOrUpdateEmergencyData(
+                    EmergencyData(
+                        emergencyContact = emergencyContact,
+                        lastKnownLatitude = latitude,
+                        lastKnownLongitude = longitude
+                    )
+                )
+            }
+            sendSMS(emergencyContact, message, context, { onSent() })
         } else {
-            Toast.makeText(context, "Failed to fetch location.", Toast.LENGTH_SHORT).show()
+            // If location is unavailable, use cached location
+            CoroutineScope(Dispatchers.IO).launch {
+                val db = AppDatabase.getInstance(context)
+                val cachedData = db.emergencyDataDao().getEmergencyData()
+
+                withContext(Dispatchers.Main) {
+                    if (cachedData != null) {
+                        val cachedMessage =
+                            if (cachedData.lastKnownLatitude != null && cachedData.lastKnownLongitude != null) {
+                                "SOS! I need help. Cached location: https://maps.google.com/?q=${cachedData.lastKnownLatitude},${cachedData.lastKnownLongitude}"
+                            } else {
+                                "SOS! I need help. Location unavailable."
+                            }
+                        sendSMS(cachedData.emergencyContact, cachedMessage, context, { onSent() })
+                    } else {
+                        Toast.makeText(context, "No emergency data available.", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+            }
         }
     }.addOnFailureListener {
         Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()

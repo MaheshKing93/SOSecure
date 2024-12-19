@@ -12,4 +12,5 @@ interface EmergencyDataDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateEmergencyData(data: EmergencyData)
+
 }

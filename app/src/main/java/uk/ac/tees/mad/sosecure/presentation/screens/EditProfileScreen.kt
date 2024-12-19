@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -46,11 +47,17 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import uk.ac.tees.mad.sosecure.data.AppDatabase
+import uk.ac.tees.mad.sosecure.data.EmergencyData
 
 @Composable
 fun EditProfileScreen(navController: NavController) {
     val db = FirebaseFirestore.getInstance()
     val auth = FirebaseAuth.getInstance()
+    val context = LocalContext.current
 
     var userName by remember { mutableStateOf("") }
     var userPhone by remember { mutableStateOf("") }
@@ -148,10 +155,22 @@ fun EditProfileScreen(navController: NavController) {
                     val updatedData = mapOf(
                         "name" to userName,
                         "phone" to userPhone,
-                        "emergencyContact" to emergencyContact
+                        "emergencyNumber" to emergencyContact
                     )
                     db.collection("users").document(userId).update(updatedData)
                         .addOnSuccessListener {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val ldb = AppDatabase.getInstance(context)
+                                val data = ldb.emergencyDataDao().getEmergencyData()
+                                ldb.emergencyDataDao().insertOrUpdateEmergencyData(
+                                    data?.copy(emergencyContact = emergencyContact)
+                                        ?: EmergencyData(
+                                            emergencyContact = emergencyContact,
+                                            lastKnownLatitude = null,
+                                            lastKnownLongitude = null
+                                        )
+                                )
+                            }
                             navController.popBackStack()
                         }
                         .addOnFailureListener {
